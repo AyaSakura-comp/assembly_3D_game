@@ -1,6 +1,6 @@
 import { Text } from '@react-three/drei'
 
-export function MemoryGrid({ memory }) {
+export function SIMMSlot({ memory }) {
   return (
     <group position={[-3, -2, 0]}>
       {memory.map((val, i) => (
@@ -9,7 +9,7 @@ export function MemoryGrid({ memory }) {
             <boxGeometry args={[0.7, 0.7, 0.2]} />
             <meshStandardMaterial color={val !== 0 ? '#003388' : '#111133'} />
           </mesh>
-          <Text position={[0, 0, 0.15]} fontSize={0.15} color="#88aaff">{val}</Text>
+          <Text position={[0, 0, 0.11]} fontSize={0.15} color="#88aaff">{val}</Text>
         </group>
       ))}
     </group>

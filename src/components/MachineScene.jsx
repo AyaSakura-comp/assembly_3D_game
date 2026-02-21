@@ -1,10 +1,12 @@
 import { useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Grid } from '@react-three/drei'
-import { RegisterCube } from './RegisterCube'
-import { MemoryGrid } from './MemoryGrid'
-import { StackTower } from './StackTower'
+import { OrbitControls } from '@react-three/drei'
 import { useGameStore } from '../store/gameStore'
+import { DIPChip } from './3d/DIPChip'
+import { SIMMSlot } from './3d/SIMMSlot'
+import { StackSocket } from './3d/StackSocket'
+import { Motherboard } from './3d/Motherboard'
+import { ApexCase } from './3d/Case'
 
 const REGISTER_NAMES = ['AX', 'BX', 'CX', 'DX']
 const REGISTER_POSITIONS = [[-3, 1, 0], [-1, 1, 0], [1, 1, 0], [3, 1, 0]]
@@ -17,22 +19,25 @@ function Scene() {
 
   return (
     <>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[0, 5, 5]} intensity={1} color="#00ff88" />
-      <Grid args={[20, 20]} cellColor="#003322" sectionColor="#005533" position={[0, -3, 0]} />
+      <ambientLight intensity={0.5} />
+      <pointLight position={[5, 5, 5]} intensity={1} color="#00ff88" />
+      
+      <ApexCase>
+        <Motherboard>
+          {REGISTER_NAMES.map((name, i) => (
+            <DIPChip
+              key={name}
+              name={name}
+              value={machine.registers[name]}
+              position={REGISTER_POSITIONS[i]}
+              active={activeReg === name}
+            />
+          ))}
 
-      {REGISTER_NAMES.map((name, i) => (
-        <RegisterCube
-          key={name}
-          name={name}
-          value={machine.registers[name]}
-          position={REGISTER_POSITIONS[i]}
-          active={activeReg === name}
-        />
-      ))}
-
-      <MemoryGrid memory={machine.memory} />
-      <StackTower stack={machine.stack} />
+          <SIMMSlot memory={machine.memory} />
+          <StackSocket stack={machine.stack} />
+        </Motherboard>
+      </ApexCase>
 
       <OrbitControls makeDefault />
     </>
