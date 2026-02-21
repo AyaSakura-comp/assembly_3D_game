@@ -30,7 +30,7 @@ export function BossMachine() {
   })
 
   return (
-    <group position={[0, 0, -18]}>
+    <group position={[0, 0, -8]}>
       {/* IBM PC style horizontal box */}
       <mesh ref={meshRef} position={[0, 0.5, 0]}>
         <boxGeometry args={[8, 1.2, 5]} />
