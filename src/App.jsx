@@ -1,5 +1,6 @@
 import { HUD } from './components/HUD'
 import { BattleLog } from './components/BattleLog'
+import { MachineScene } from './components/MachineScene'
 
 export default function App() {
   return (
@@ -7,10 +8,7 @@ export default function App() {
       <HUD />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 border-r border-green-800">
-          {/* 3D scene goes here - Task 6 */}
-          <div className="h-full flex items-center justify-center text-green-700 font-mono">
-            [ 3D Machine Visualization ]
-          </div>
+          <MachineScene />
         </div>
         <div className="w-1/2 flex flex-col">
           {/* Editor goes here - Task 7 */}
