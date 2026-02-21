@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { createMachine, parseProgram } from '../interpreter/interpreter'
 import { matchSkill } from '../interpreter/skillMatcher'
+import { InstructionRef } from './InstructionRef'
 
 const STARTER_CODE = `; Level 1: Compute a + b
 ; a is in AX, b is in BX
@@ -47,7 +48,12 @@ export function EditorPanel() {
             addLog(`❌ No skill matched. Output: [${current.output.join(', ')}] (-5 HP)`)
           }
         }
-        useGameStore.setState({ phase: 'editing', machine: createMachine() })
+        const currentPhase = useGameStore.getState().phase
+        if (currentPhase !== 'win' && currentPhase !== 'lose') {
+          useGameStore.setState({ phase: 'editing', machine: createMachine() })
+        } else {
+          useGameStore.setState({ machine: createMachine() })
+        }
         return
       }
 
@@ -70,6 +76,7 @@ export function EditorPanel() {
           options={{ fontSize: 14, fontFamily: 'monospace', minimap: { enabled: false } }}
         />
       </div>
+      <InstructionRef />
       <div className="p-3 border-t border-green-800 bg-gray-900">
         <button
           onClick={handleExecute}

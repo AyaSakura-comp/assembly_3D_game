@@ -1,3 +1,4 @@
+import { Component } from 'react'
 import { HUD } from './components/HUD'
 import { BattleLog } from './components/BattleLog'
 import { MachineScene } from './components/MachineScene'
@@ -5,7 +6,28 @@ import { EditorPanel } from './components/EditorPanel'
 import { useBossTimer } from './hooks/useBossTimer'
 import { useGameStore } from './store/gameStore'
 
-export default function App() {
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { error: error.message || String(error) }
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ background: '#1a0000', color: '#ff4444', padding: 24, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+          <div style={{ fontSize: 18, marginBottom: 12 }}>💥 Render Error in: {this.props.name}</div>
+          <div>{this.state.error}</div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
+function AppInner() {
   useBossTimer()
   const { phase, reset } = useGameStore()
 
@@ -14,10 +36,14 @@ export default function App() {
       <HUD />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 border-r border-green-800">
-          <MachineScene />
+          <ErrorBoundary name="MachineScene">
+            <MachineScene />
+          </ErrorBoundary>
         </div>
         <div className="w-1/2 flex flex-col">
-          <EditorPanel />
+          <ErrorBoundary name="EditorPanel">
+            <EditorPanel />
+          </ErrorBoundary>
         </div>
       </div>
       <BattleLog />
@@ -37,5 +63,13 @@ export default function App() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary name="App">
+      <AppInner />
+    </ErrorBoundary>
   )
 }
