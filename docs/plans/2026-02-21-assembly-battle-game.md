@@ -6,7 +6,7 @@
 
 **Architecture:** The app is a single-page React app with a split layout — a 3D scene (React Three Fiber) showing CPU internals on the left, and a Monaco code editor on the right. A custom JS assembly interpreter executes instructions one frame at a time, updating Zustand state which drives both the 3D visualization and the HUD. Each level defines a set of valid skill patterns (expected outputs) and a boss with HP and attack timer.
 
-**Tech Stack:** Vite, React, React Three Fiber, @react-three/drei, Monaco Editor (@monaco-editor/react), Zustand, Tailwind CSS, Vitest
+**Tech Stack:** Vite, React, React Three Fiber, @react-three/drei, Monaco Editor (@monaco-editor/react), Zustand, Tailwind CSS, Vitest, React Testing Library, Playwright
 
 ---
 
@@ -1261,7 +1261,280 @@ git commit -m "feat: add collapsible instruction reference panel"
 
 ---
 
-### Task 11: Final polish and smoke test
+### Task 11: UI component tests (React Testing Library)
+
+**Files:**
+- Create: `src/components/HUD.test.jsx`
+- Create: `src/components/EditorPanel.test.jsx`
+- Create: `src/components/BattleLog.test.jsx`
+
+Install RTL:
+```bash
+npm install -D @testing-library/react @testing-library/user-event @testing-library/jest-dom
+```
+
+Add to `vite.config.js` test config:
+```js
+setupFiles: ['./src/test/setup.js']
+```
+
+Create `src/test/setup.js`:
+```js
+import '@testing-library/jest-dom'
+```
+
+**Step 1: Write failing HUD tests**
+
+Create `src/components/HUD.test.jsx`:
+```jsx
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { HUD } from './HUD'
+import { useGameStore } from '../store/gameStore'
+
+beforeEach(() => useGameStore.getState().reset())
+
+describe('HUD', () => {
+  it('shows initial player HP as 100', () => {
+    render(<HUD />)
+    expect(screen.getByText('100')).toBeInTheDocument()
+  })
+
+  it('reflects HP after damage', () => {
+    useGameStore.getState().applyDamageToPlayer(30)
+    render(<HUD />)
+    expect(screen.getByText('70')).toBeInTheDocument()
+  })
+
+  it('timer pulses red when <= 5', () => {
+    useGameStore.setState({ timer: 3 })
+    render(<HUD />)
+    const timerEl = screen.getByText('3s')
+    expect(timerEl).toHaveClass('text-red-400')
+  })
+})
+```
+
+**Step 2: Write failing BattleLog tests**
+
+Create `src/components/BattleLog.test.jsx`:
+```jsx
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { BattleLog } from './BattleLog'
+import { useGameStore } from '../store/gameStore'
+
+beforeEach(() => useGameStore.getState().reset())
+
+describe('BattleLog', () => {
+  it('renders empty initially', () => {
+    render(<BattleLog />)
+    expect(screen.queryByRole('listitem')).toBeNull()
+  })
+
+  it('shows log messages', () => {
+    useGameStore.getState().addLog('Add Beam! -20 HP')
+    render(<BattleLog />)
+    expect(screen.getByText('Add Beam! -20 HP')).toBeInTheDocument()
+  })
+})
+```
+
+**Step 3: Write failing EditorPanel tests**
+
+Create `src/components/EditorPanel.test.jsx`:
+```jsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+import { EditorPanel } from './EditorPanel'
+import { useGameStore } from '../store/gameStore'
+
+// Mock Monaco editor (it requires a browser environment)
+vi.mock('@monaco-editor/react', () => ({
+  default: ({ value, onChange }) => (
+    <textarea data-testid="editor" value={value} onChange={e => onChange(e.target.value)} />
+  ),
+}))
+
+beforeEach(() => useGameStore.getState().reset())
+
+describe('EditorPanel', () => {
+  it('Execute button is enabled during editing phase', () => {
+    render(<EditorPanel />)
+    expect(screen.getByText('▶ Execute')).not.toBeDisabled()
+  })
+
+  it('correct a+b program fires Add Beam and reduces boss HP', () => {
+    useGameStore.setState({ inputs: { a: 3, b: 4 } })
+    render(<EditorPanel />)
+    // Set correct program
+    fireEvent.change(screen.getByTestId('editor'), {
+      target: { value: 'MOV AX, 3\nMOV BX, 4\nADD AX, BX\nHLT AX' }
+    })
+    fireEvent.click(screen.getByText('▶ Execute'))
+    expect(useGameStore.getState().bossHp).toBe(80) // 100 - 20 damage
+    expect(useGameStore.getState().battleLog[0]).toMatch(/Add Beam/)
+  })
+
+  it('wrong output deals damage to player', () => {
+    render(<EditorPanel />)
+    fireEvent.change(screen.getByTestId('editor'), {
+      target: { value: 'MOV AX, 99\nHLT AX' }
+    })
+    fireEvent.click(screen.getByText('▶ Execute'))
+    expect(useGameStore.getState().playerHp).toBeLessThan(100)
+  })
+})
+```
+
+**Step 4: Run tests to confirm they fail**
+
+```bash
+npx vitest run src/components/
+```
+Expected: FAIL (components not yet matching test expectations)
+
+**Step 5: Fix any component issues until tests pass**
+
+```bash
+npx vitest run src/components/
+```
+Expected: All PASS
+
+**Step 6: Commit**
+
+```bash
+git add src/components/*.test.jsx src/test/
+git commit -m "test: add RTL tests for HUD, BattleLog, EditorPanel"
+```
+
+---
+
+### Task 12: Playwright visual screenshot verification
+
+**Files:**
+- Create: `e2e/game.spec.js`
+- Create: `playwright.config.js`
+
+Playwright launches a real headless Chrome, interacts with the running app, takes screenshots, and saves them to `e2e/screenshots/`. Claude reads these images to verify the UI visually.
+
+**Step 1: Install Playwright**
+
+```bash
+npm install -D @playwright/test
+npx playwright install chromium
+```
+
+**Step 2: Create Playwright config**
+
+Create `playwright.config.js`:
+```js
+import { defineConfig } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  use: {
+    baseURL: 'http://localhost:5173',
+    screenshot: 'on',
+    video: 'off',
+  },
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: true,
+  },
+  outputDir: 'e2e/screenshots',
+})
+```
+
+**Step 3: Write e2e screenshot tests**
+
+Create `e2e/game.spec.js`:
+```js
+import { test, expect } from '@playwright/test'
+import path from 'path'
+
+test('initial load — HUD and layout visible', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForTimeout(1000) // let 3D scene render
+  await page.screenshot({ path: 'e2e/screenshots/01-initial-load.png', fullPage: true })
+  // Verify key text elements
+  await expect(page.getByText('Player HP:')).toBeVisible()
+  await expect(page.getByText('Boss HP:')).toBeVisible()
+  await expect(page.getByText('▶ Execute')).toBeVisible()
+})
+
+test('execute correct a+b — Add Beam fires', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForTimeout(500)
+  // Clear editor and type correct program
+  await page.click('.monaco-editor')
+  await page.keyboard.press('Control+A')
+  await page.keyboard.type('MOV AX, 3\nMOV BX, 4\nADD AX, BX\nHLT AX')
+  await page.screenshot({ path: 'e2e/screenshots/02-before-execute.png' })
+  await page.click('text=▶ Execute')
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: 'e2e/screenshots/03-after-execute.png' })
+  await expect(page.getByText(/Add Beam/)).toBeVisible()
+})
+
+test('lose condition — SYSTEM CRASH overlay', async ({ page }) => {
+  await page.goto('/')
+  // Force player HP to 0 via store (inject script)
+  await page.evaluate(() => {
+    window.__zustand_store__.getState().applyDamageToPlayer(100)
+  })
+  await page.waitForTimeout(200)
+  await page.screenshot({ path: 'e2e/screenshots/04-system-crash.png' })
+  await expect(page.getByText('SYSTEM CRASH')).toBeVisible()
+})
+
+test('win condition — PROGRAM COMPLETE overlay', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(() => {
+    window.__zustand_store__.getState().applyDamageToBoss(100)
+  })
+  await page.waitForTimeout(200)
+  await page.screenshot({ path: 'e2e/screenshots/05-win-screen.png' })
+  await expect(page.getByText('PROGRAM COMPLETE')).toBeVisible()
+})
+```
+
+**Step 4: Expose store to window (for e2e injection)**
+
+Edit `src/main.jsx` — add after store import:
+```js
+import { useGameStore } from './store/gameStore'
+if (import.meta.env.DEV) {
+  window.__zustand_store__ = useGameStore
+}
+```
+
+**Step 5: Run Playwright and capture screenshots**
+
+```bash
+npm run dev &
+npx playwright test --reporter=list
+```
+Expected: 4 tests pass, screenshots saved to `e2e/screenshots/`
+
+**Step 6: Claude reads screenshots to verify visually**
+
+```bash
+ls e2e/screenshots/
+```
+Claude reads each `.png` using the Read tool and reports what it sees.
+
+**Step 7: Commit**
+
+```bash
+git add e2e/ playwright.config.js src/main.jsx
+git commit -m "test: add Playwright e2e screenshot tests"
+```
+
+---
+
+### Task 13: Final polish and smoke test
 
 **Step 1: Run all tests**
 
@@ -1297,3 +1570,14 @@ Expected: `dist/` folder created with no errors
 git add -A
 git commit -m "feat: assembly battle game v1 complete"
 ```
+
+---
+
+## Verification Summary
+
+| Layer | Tool | What it covers |
+|-------|------|---------------|
+| Unit | Vitest | Interpreter instructions, skill matching, game store logic |
+| Component | React Testing Library | HUD HP display, battle log messages, Execute button behavior |
+| Visual | Playwright + screenshots | Layout, overlays, skill fire confirmation — Claude reads screenshots |
+| 3D scene | Manual only | Register pulse animation, memory grid, stack tower (canvas not testable) |
