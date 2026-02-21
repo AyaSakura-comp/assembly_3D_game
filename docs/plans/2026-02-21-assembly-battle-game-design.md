@@ -11,6 +11,42 @@ A web-based 3D puzzle battle game where players write assembly programs to attac
 
 ---
 
+## Art Direction
+
+### Aesthetic: 1980s Retro Hardware Battle
+
+The scene looks like two physical computers facing off on a workbench.
+
+### Player's Machine (the CPU being programmed)
+- Modeled as a **beige/cream colored desktop computer case** (think Apple II or Commodore 64 era)
+- **Registers** — physical DIP chips mounted on a visible PCB inside the open case lid, each chip has a small **7-segment LED display** showing the current value, glows amber when active
+- **Memory** — a row of RAM chips on the PCB, active cells light up a small red LED
+- **Stack** — a separate chip tower with a physical "stack pointer" LED indicator moving up/down
+- **PCB traces** — visible green circuit board with gold copper traces connecting components; data flow animates as a pulse running along the trace
+- **Case details** — ventilation slots, a blinking power LED (green), a cassette/floppy drive slot, sticker labels on chips ("AX", "BX", etc.)
+
+### Boss Machine (the rival computer)
+- A **different brand aesthetic** — dark gray/charcoal case (think IBM PC or TRS-80), more angular and imposing
+- Has a small **CRT monitor** on top displaying glitchy ASCII art or a menacing "READY>" prompt
+- Boss HP shown as a physical **LED bar meter** on the boss machine's front panel
+- When attacking, the boss fires **data packets** — visualized as spinning floppy disks or punched tape rolls flying across the scene
+- When hit, the boss machine sparks, its CRT flickers, and its cooling fan spins audibly
+
+### Environment
+- **Workbench surface** — wood grain texture, like a hobbyist's desk
+- **Background** — dark room, lit by the glow of the monitors and LEDs
+- **Cables** — ribbon cables and serial cables visibly connecting components
+- **Lighting** — warm amber from the player's LEDs, cold blue-white from the boss's CRT
+
+### UI / HUD
+- **Font:** Monospace, mimicking a dot-matrix printer or early computer terminal
+- **Health bars:** Physical LED bar meters (like VU meters on old stereos)
+- **Timer:** 7-segment digital display, red digits counting down
+- **Battle log:** Styled as a dot-matrix printer paper roll scrolling upward
+- **Code editor:** Styled as a green-phosphor CRT terminal (dark green background, bright green text)
+
+---
+
 ## Core Game Loop
 
 ```
