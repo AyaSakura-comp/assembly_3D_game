@@ -48,8 +48,11 @@ function Scene() {
 
   return (
     <>
-      <ambientLight intensity={0.7} />
+      <color attach="background" args={['#1a2a3a']} />
+      <fog attach="fog" args={['#1a2a3a', 20, 40]} />
+      <ambientLight intensity={0.9} />
       <pointLight position={[5, 10, 5]} intensity={1.5} color="#ffffff" />
+      <pointLight position={[-5, 8, -10]} intensity={0.8} color="#aaccff" />
 
       <ApexCase>
         <Motherboard>
