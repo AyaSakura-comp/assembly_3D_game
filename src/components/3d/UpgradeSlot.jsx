@@ -7,7 +7,7 @@ const UPGRADES = [
   { id: 'shield', label: 'SHD', color: '#0066aa', description: '-3 damage taken' },
 ]
 
-export function UpgradeSlot({ position = [4, 0.1, -2] }) {
+export function UpgradeSlot({ position = [-3, 0.1, 2.5] }) {
   const activeUpgrade = useGameStore(s => s.activeUpgrade ?? null)
 
   return (
@@ -22,8 +22,8 @@ export function UpgradeSlot({ position = [4, 0.1, -2] }) {
           <group key={upgrade.id} position={[i * 1.2 - 1.2, 0, 0]}>
             {/* Socket */}
             <mesh>
-              <boxGeometry args={[1, 0.15, 0.8]} />
-              <meshStandardMaterial color="#1a1a1a" />
+              <boxGeometry args={[1, 0.2, 0.8]} />
+              <meshStandardMaterial color="#444444" />
             </mesh>
 
             {/* Chip (if active) */}

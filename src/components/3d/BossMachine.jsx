@@ -20,10 +20,12 @@ export function BossMachine() {
     if (flickerTime > 0) {
       setFlickerTime(t => Math.max(0, t - delta))
       if (meshRef.current) {
-        meshRef.current.material.emissiveIntensity = 2 * Math.sin(Date.now() / 30)
+        meshRef.current.material.emissive.setHex(0xff2200)
+        meshRef.current.material.emissiveIntensity = Math.abs(2 * Math.sin(Date.now() / 30))
       }
     } else if (meshRef.current) {
-      meshRef.current.material.emissiveIntensity = 0.05
+      meshRef.current.material.emissive.setHex(0x000000)
+      meshRef.current.material.emissiveIntensity = 0
     }
   })
 
@@ -33,11 +35,11 @@ export function BossMachine() {
       <mesh ref={meshRef} position={[0, 0.5, 0]}>
         <boxGeometry args={[8, 1.2, 5]} />
         <meshStandardMaterial
-          color="#333333"
-          emissive="#ff2200"
-          emissiveIntensity={0.05}
-          roughness={0.3}
-          metalness={0.6}
+          color="#3a3a3a"
+          emissive="#000000"
+          emissiveIntensity={0}
+          roughness={0.7}
+          metalness={0.2}
         />
       </mesh>
 
