@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { createMachine, stepInstruction } from '../interpreter/interpreter'
+import { LEVELS } from '../levels/levels'
+
+const firstLevel = LEVELS[0]
 
 const INITIAL = {
   playerHp: 100,
@@ -8,10 +11,10 @@ const INITIAL = {
   machine: createMachine(),
   instructions: [],
   timer: 30,
-  budget: 20,
+  budget: firstLevel.budget,
   battleLog: [],
   currentLevel: 1,
-  inputs: { a: 3, b: 4 },
+  inputs: firstLevel.inputs,
 }
 
 export const useGameStore = create((set, get) => ({
@@ -22,7 +25,6 @@ export const useGameStore = create((set, get) => ({
   setMachine: (machine) => set({ machine }),
   setInstructions: (instructions) => set({ instructions }),
   setPhase: (phase) => set({ phase }),
-  tickTimer: () => set((s) => ({ timer: Math.max(0, s.timer - 1) })),
 
   applyDamageToPlayer: (amount) => set((s) => {
     const playerHp = Math.max(0, s.playerHp - amount)
@@ -42,5 +44,21 @@ export const useGameStore = create((set, get) => ({
     if (s.machine.halted || s.machine.error) return s
     const next = stepInstruction(s.machine, s.instructions)
     return { machine: next }
+  }),
+
+  nextLevel: () => set((s) => {
+    const next = LEVELS.find(l => l.level === s.currentLevel + 1)
+    if (!next) return { phase: 'victory' }
+    return {
+      currentLevel: next.level,
+      bossHp: 100,
+      phase: 'editing',
+      machine: createMachine(),
+      instructions: [],
+      timer: 30,
+      budget: next.budget,
+      inputs: next.inputs,
+      battleLog: [...s.battleLog.slice(-9), `⚡ Level ${next.level}: ${next.title}!`],
+    }
   }),
 }))

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useGameStore } from './gameStore'
 
-// Reset store between tests
 beforeEach(() => {
   useGameStore.getState().reset()
 })
@@ -11,9 +10,10 @@ describe('gameStore', () => {
     const s = useGameStore.getState()
     expect(s.playerHp).toBe(100)
     expect(s.bossHp).toBe(100)
-    expect(s.phase).toBe('editing') // 'editing' | 'executing' | 'win' | 'lose'
+    expect(s.phase).toBe('editing')
     expect(s.machine).toBeDefined()
     expect(s.timer).toBe(30)
+    expect(s.currentLevel).toBe(1)
   })
 
   it('applyDamageToPlayer reduces playerHp', () => {
@@ -34,5 +34,20 @@ describe('gameStore', () => {
   it('phase transitions to win when bossHp <= 0', () => {
     useGameStore.getState().applyDamageToBoss(100)
     expect(useGameStore.getState().phase).toBe('win')
+  })
+
+  it('nextLevel advances to level 2 with new inputs and budget', () => {
+    useGameStore.getState().applyDamageToBoss(100)
+    useGameStore.getState().nextLevel()
+    const s = useGameStore.getState()
+    expect(s.currentLevel).toBe(2)
+    expect(s.bossHp).toBe(100)
+    expect(s.phase).toBe('editing')
+  })
+
+  it('nextLevel after level 10 sets phase to victory', () => {
+    useGameStore.setState({ currentLevel: 10 })
+    useGameStore.getState().nextLevel()
+    expect(useGameStore.getState().phase).toBe('victory')
   })
 })
