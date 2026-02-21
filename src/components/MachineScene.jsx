@@ -9,7 +9,8 @@ import { Motherboard } from './3d/Motherboard'
 import { ApexCase } from './3d/Case'
 
 const REGISTER_NAMES = ['AX', 'BX', 'CX', 'DX']
-const REGISTER_POSITIONS = [[-3, 0, 0], [-1, 0, 0], [1, 0, 0], [3, 0, 0]]
+// Chips are 0.4 tall, so Y=0.2 puts their bottom exactly at Y=0
+const REGISTER_POSITIONS = [[-3, 0.2, -2], [-1, 0.2, -2], [1, 0.2, -2], [3, 0.2, -2]]
 
 function Scene() {
   const { machine } = useGameStore()
@@ -19,8 +20,8 @@ function Scene() {
 
   return (
     <>
-      <ambientLight intensity={1.0} />
-      <pointLight position={[5, 10, 5]} intensity={2.0} color="#ffffff" />
+      <ambientLight intensity={0.7} />
+      <pointLight position={[5, 10, 5]} intensity={1.5} color="#ffffff" />
       
       <ApexCase>
         <Motherboard>
@@ -46,7 +47,7 @@ function Scene() {
 
 export function MachineScene() {
   return (
-    <Canvas camera={{ position: [0, 5, 10], fov: 60 }}>
+    <Canvas camera={{ position: [0, 8, 12], fov: 50 }}>
       <Scene />
     </Canvas>
   )
