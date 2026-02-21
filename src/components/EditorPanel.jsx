@@ -1,24 +1,20 @@
 import Editor from '@monaco-editor/react'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { createMachine, parseProgram } from '../interpreter/interpreter'
 import { matchSkill } from '../interpreter/skillMatcher'
 import { InstructionRef } from './InstructionRef'
-
-const STARTER_CODE = `; Level 1: Compute a + b
-; a is in AX, b is in BX
-; HLT with the result
-
-MOV AX, 3
-MOV BX, 4
-ADD AX, BX
-HLT AX
-`
+import { LEVELS } from '../levels/levels'
 
 export function EditorPanel() {
-  const [code, setCode] = useState(STARTER_CODE)
+  const { inputs, budget, applyDamageToBoss, applyDamageToPlayer, addLog, phase, currentLevel } = useGameStore()
+  const levelDef = LEVELS.find(l => l.level === currentLevel) ?? LEVELS[0]
+  const [code, setCode] = useState(levelDef.hint)
   const rafRef = useRef(null)
-  const { inputs, budget, applyDamageToBoss, applyDamageToPlayer, addLog, phase } = useGameStore()
+
+  useEffect(() => {
+    setCode(levelDef.hint)
+  }, [currentLevel])
 
   function handleExecute() {
     if (phase !== 'editing') return
@@ -39,13 +35,13 @@ export function EditorPanel() {
           applyDamageToPlayer(10)
           addLog(`❌ Error: ${current.error ?? 'budget exceeded'} (-10 HP)`)
         } else {
-          const skill = matchSkill(current.output, inputs)
+          const skill = matchSkill(current.output, inputs, levelDef.skillName)
           if (skill) {
             applyDamageToBoss(skill.damage)
             addLog(`✨ ${skill.name}! Boss takes ${skill.damage} damage!`)
           } else {
             applyDamageToPlayer(5)
-            addLog(`❌ No skill matched. Output: [${current.output.join(', ')}] (-5 HP)`)
+            addLog(`❌ Wrong answer. Output: [${current.output.join(', ')}] (-5 HP)`)
           }
         }
         const currentPhase = useGameStore.getState().phase
@@ -66,6 +62,9 @@ export function EditorPanel() {
 
   return (
     <div className="flex flex-col h-full">
+      <div className="px-3 py-1 bg-gray-900 border-b border-green-800 font-mono text-xs text-yellow-400">
+        Level {currentLevel}/10 — {levelDef.title}
+      </div>
       <div className="flex-1">
         <Editor
           height="100%"
