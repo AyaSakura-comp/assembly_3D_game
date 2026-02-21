@@ -15,6 +15,7 @@ const INITIAL = {
   battleLog: [],
   currentLevel: 1,
   inputs: firstLevel.inputs,
+  activeUpgrade: null,
 }
 
 export const useGameStore = create((set, get) => ({
@@ -39,6 +40,8 @@ export const useGameStore = create((set, get) => ({
   addLog: (message) => set((s) => ({
     battleLog: [...s.battleLog.slice(-9), message],
   })),
+
+  setUpgrade: (upgradeId) => set({ activeUpgrade: upgradeId }),
 
   stepMachine: () => set((s) => {
     if (s.machine.halted || s.machine.error) return s
