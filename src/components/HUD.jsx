@@ -6,7 +6,7 @@ export function HUD() {
   return (
     <div className="flex justify-between items-center px-4 py-2 bg-gray-900 text-green-400 font-mono text-sm border-b border-green-800">
       <div className="flex items-center gap-2">
-        <span>Player HP:</span>
+        <span>PLAYER HEALTH:</span>
         <div className="w-32 h-3 bg-gray-700 rounded">
           <div className="h-3 bg-green-500 rounded" style={{ width: `${playerHp}%` }} />
         </div>
