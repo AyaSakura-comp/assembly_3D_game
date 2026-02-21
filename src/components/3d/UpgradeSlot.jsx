@@ -7,7 +7,7 @@ const UPGRADES = [
   { id: 'shield', label: 'SHD', color: '#0066aa', description: '-3 damage taken' },
 ]
 
-export function UpgradeSlot({ position = [-3, 0.1, 1.5] }) {
+export function UpgradeSlot({ position = [2, 0.1, 1.5] }) {
   const activeUpgrade = useGameStore(s => s.activeUpgrade ?? null)
 
   return (
