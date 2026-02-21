@@ -80,6 +80,12 @@ function Scene() {
         </Motherboard>
       </ApexCase>
 
+      {/* Ground plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.1, -4]}>
+        <planeGeometry args={[30, 40]} />
+        <meshStandardMaterial color="#1a1a2a" roughness={0.9} />
+      </mesh>
+
       <BossMachine />
       <OrbitControls makeDefault />
     </>

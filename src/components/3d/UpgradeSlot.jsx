@@ -12,14 +12,14 @@ export function UpgradeSlot({ position = [-3, 0.1, 2.5] }) {
 
   return (
     <group position={position}>
-      <Text position={[0, 1.2, 0]} fontSize={0.18} color="#ffaa00" rotation={[-Math.PI / 2, 0, 0]}>
-        UPGRADE SLOT
+      <Text position={[1.2, 1.2, -0.8]} fontSize={0.15} color="#ffaa00" rotation={[-Math.PI / 2, 0, 0]}>
+        UPGRADE SLOTS
       </Text>
 
       {UPGRADES.map((upgrade, i) => {
         const isActive = activeUpgrade === upgrade.id
         return (
-          <group key={upgrade.id} position={[i * 1.2 - 1.2, 0, 0]}>
+          <group key={upgrade.id} position={[i * 1.4, 0, 0]}>
             {/* Socket */}
             <mesh>
               <boxGeometry args={[1, 0.2, 0.8]} />
