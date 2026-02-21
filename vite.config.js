@@ -8,5 +8,6 @@ export default defineConfig({
     globals: true,
     pool: 'forks',
     singleFork: true,
+    setupFiles: ['./src/test/setup.js'],
   },
 })
